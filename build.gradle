@@ -1,0 +1,16 @@
+plugins {
+    // Apply the java-library plugin for API and implementation separation.
+    id 'java-library'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+	// Use GSON for easy JSON reading
+	implementation 'com.google.code.gson:gson:2.8.8'
+	// Use Zip4J for easy unzipping
+	implementation 'net.lingala.zip4j:zip4j:2.9.0'
+}
