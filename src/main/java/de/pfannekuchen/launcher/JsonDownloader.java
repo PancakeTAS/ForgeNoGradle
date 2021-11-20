@@ -1,12 +1,21 @@
 package de.pfannekuchen.launcher;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import com.google.gson.Gson;
 
 import de.pfannekuchen.launcher.Utils.Os;
 import de.pfannekuchen.launcher.exceptions.ConnectionException;
@@ -15,6 +24,8 @@ import de.pfannekuchen.launcher.json.Library;
 import de.pfannekuchen.launcher.json.NativesDownload;
 import de.pfannekuchen.launcher.json.Rule;
 import de.pfannekuchen.launcher.json.VersionJson;
+import de.pfannekuchen.launcher.jsonassets.Asset;
+import de.pfannekuchen.launcher.jsonassets.AssetsJson;
 import de.pfannekuchen.launcher.jsonforge.ForgeVersionJson;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -31,14 +42,17 @@ public class JsonDownloader {
 	 * @param out Output Folder for dependencies
 	 * @param in Json to go off
 	 * @param forgeversions Json to go off
+	 * @param assets Json to go off
 	 */
-	public static void downloadDeps(File out, VersionJson in, ForgeVersionJson forgeversions) {
+	public static void downloadDeps(File out, VersionJson in, ForgeVersionJson forgeversions, AssetsJson assets) {
 		int time = (int) System.currentTimeMillis();
 		out.mkdirs();
 		File natives = new File(out, "natives");
 		File libs = new File(out, "libraries");
+		File assetsdir = new File(out, "assets");
 		natives.mkdir();
 		libs.mkdir();
+		assetsdir.mkdir();
 		System.out.println(String.format("[JsonDownloader] Downloading Dependencies for Minecraft version %s", in.id));
 		Os os = Utils.getOs();
 		System.out.println(String.format("[JsonDownloader] Detected operating system: %s", os.name()));
@@ -111,11 +125,29 @@ public class JsonDownloader {
 			throw new ConnectionException("Error downloading forge dependencies", e);
 		}
 		try {
-			System.out.println(String.format("[JsonDownloader] Downloading Client..."));
-			Files.copy(new URL(in.downloads.client.url).openStream(), new File(out, "client.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println(String.format("[JsonDownloader] Downloading Assets..."));
+			ExecutorService e = Executors.newFixedThreadPool(64);
+			for (Entry<String, Asset> library : assets.objects.entrySet()) {
+				e.execute(() -> {
+					try {
+						final URL url = new URL("https://resources.download.minecraft.net/" + library.getValue().hash.substring(0, 2) + "/" + library.getValue().hash);
+						final File outFile = new File(new File(assetsdir, "objects"), library.getValue().hash.substring(0, 2) + "/" + library.getValue().hash);
+						outFile.getParentFile().mkdirs();
+						System.out.println(String.format("[JsonDownloader] Downloading %s...", outFile.getName()));
+						Files.copy(url.openStream(), outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				});
+			}
+			e.shutdown();
+			while (!e.awaitTermination(200L, TimeUnit.MILLISECONDS)) {}
+			File indexes = new File(assetsdir, "indexes");
+			indexes.mkdirs();
+			Files.copy(new ByteArrayInputStream(new Gson().toJson(assets).getBytes(StandardCharsets.UTF_8)), new File(indexes, in.assetIndex.id + ".json").toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (Exception e) {
 			Utils.deleteDirectory(out);
-			throw new ConnectionException("Error downloading client", e);
+			throw new ConnectionException("Error downloading assets", e);
 		}
 		System.out.println(String.format(Locale.ENGLISH, "[JsonDownloader] All files successfully downloaded. Took %.2f seconds", (((int) System.currentTimeMillis()) - time) / 1000.0f));
 	}

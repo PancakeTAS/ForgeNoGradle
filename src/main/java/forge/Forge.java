@@ -5,12 +5,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 
 import de.pfannekuchen.launcher.JsonDownloader;
 import de.pfannekuchen.launcher.Utils;
 import de.pfannekuchen.launcher.json.VersionJson;
+import de.pfannekuchen.launcher.jsonassets.AssetsJson;
 import de.pfannekuchen.launcher.jsonforge.ForgeVersionJson;
 
 public class Forge {
@@ -57,6 +59,7 @@ public class Forge {
 			.settings/
 			.bin/
 			.run/
+			.runserver/
 			.classpath
 			.project
 			
@@ -96,26 +99,25 @@ org.eclipse.jdt.core.compiler.source=1.8
 	public static final String RUN = """
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.minecraft.launchwrapper.Launch"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="GradleStart"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="%PROJECT%"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--username ForgeDev --version forge --gameDir .minecraft --assetsDir .assets --assetIndex 1.12 --uuid 8667ba71-b85a-4004-af54-457a9734eed7 --accessToken 0 --userType notch --tweakClass net.minecraftforge.fml.common.launcher.FMLTweaker --versionType Forge"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="%PROJECT%"/>
     <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:%PROJECT%}/.run"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=../libraries/natives/"/>
 </launchConfiguration>
 			""";
 	
 	public static final String LIBRARY = "\t<classpathentry kind=\"lib\" path=\"%PATH%\"/>";
 	
 	public static void main(String[] args) throws Exception {
-		final File out = new File("project");
+		final File out = new File(".");
 		if (out.exists()) Utils.deleteDirectory(out);
 		// Obtain versions.json and download dependencies
 		VersionJson versions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://launchermeta.mojang.com/v1/packages/f07e0f1228f79b9b04313fc5640cd952474ba6f5/1.12.2.json")), VersionJson.class);
-		ForgeVersionJson forgeversions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://data.mgnet.work/forge/1.12.2.json")), ForgeVersionJson.class);
+		ForgeVersionJson forgeversions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://data.mgnet.work/forge/" + versions.id + ".json")), ForgeVersionJson.class);
+		AssetsJson assets = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL(versions.assetIndex.url)), AssetsJson.class);
 		final File libraries = new File(out, "libraries");
-		JsonDownloader.downloadDeps(libraries, versions, forgeversions);
-		Files.copy(new URL("https://maven.minecraftforge.net/net/minecraftforge/forge/1.12.2-14.23.5.2855/forge-1.12.2-14.23.5.2855-universal.jar").openStream(), new File(libraries, "libraries/forge-1.12.2-14.23.5.2855-universal.jar").toPath());
+		JsonDownloader.downloadDeps(libraries, versions, forgeversions, assets);
+		Files.copy(new URL("https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar").openStream(), new File(libraries, "mc-forge-" + versions.id + ".jar").toPath());
 		// Prepare Project File
 		Files.write(new File(out, ".project").toPath(), PROJECT.replaceFirst("%NAME%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare Classpath File
@@ -126,21 +128,23 @@ org.eclipse.jdt.core.compiler.source=1.8
 			else
 				partclasspath += LIBRARY.replaceFirst("%PATH%", out.toURI().relativize(lib.toURI()).getPath()) + '\n';
 		}
-		partclasspath += LIBRARY.replaceFirst("%PATH%", out.toURI().relativize(new File(libraries, "client.jar").toURI()).getPath()) + '\n';
+		partclasspath += LIBRARY.replaceFirst("%PATH%", out.toURI().relativize(new File(libraries, "mc-forge-" + versions.id + ".jar").toURI()).getPath()) + '\n';
 		Files.write(new File(out, ".classpath").toPath(), CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare settings file
 		new File(out, ".settings").mkdir();
 		Files.write(new File(out, ".settings/org.eclipse.jdt.core.prefs").toPath(), CORE_PREFS.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare .gitignore
 		Files.write(new File(out, ".gitignore").toPath(), GITIGNORE.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-		// Prepare launch file
-		Files.write(new File(out, out.getName() + "-1.12.2.launch").toPath(), RUN.replaceAll("%PROJECT%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-		// Create a src and rsc directory
+		// Prepare launch files
+		Files.write(new File(out, out.getName() + "-" + versions.id + ".launch").toPath(), RUN.replaceAll("%PROJECT%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+		Files.write(new File(out, out.getName() + "-" + versions.id + "-server.launch").toPath(), RUN.replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/.run"), "/.runserver").replaceAll("%PROJECT%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+		// Create source directories
 		new File(out, "src").mkdir();
 		new File(out, "rsc").mkdir();
 		// Finally create a build and run directory
 		new File(out, ".bin").mkdir();
 		new File(out, ".run").mkdir();
+		new File(out, ".runserver").mkdir();
 	}
 	
 }

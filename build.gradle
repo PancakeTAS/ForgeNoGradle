@@ -14,3 +14,9 @@ dependencies {
 	// Use Zip4J for easy unzipping
 	implementation 'net.lingala.zip4j:zip4j:2.9.0'
 }
+
+jar {
+	manifest {
+		attributes("Main-Class": "forge.Forge")
+	}
+}
