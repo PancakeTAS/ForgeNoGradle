@@ -18,98 +18,86 @@ import de.pfannekuchen.launcher.jsonforge.ForgeVersionJson;
 public class Forge {
 
 	private static final Gson gson = new Gson();
-	private static final String PROJECT = """
-<?xml version="1.0" encoding="UTF-8"?>
-<projectDescription>
-	<name>%NAME%</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-	</natures>
-</projectDescription>
-			""";
+	private static final String PROJECT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+			+ "<projectDescription>\r\n"
+			+ "	<name>%NAME%</name>\r\n"
+			+ "	<comment></comment>\r\n"
+			+ "	<projects>\r\n"
+			+ "	</projects>\r\n"
+			+ "	<buildSpec>\r\n"
+			+ "		<buildCommand>\r\n"
+			+ "			<name>org.eclipse.jdt.core.javabuilder</name>\r\n"
+			+ "			<arguments>\r\n"
+			+ "			</arguments>\r\n"
+			+ "		</buildCommand>\r\n"
+			+ "	</buildSpec>\r\n"
+			+ "	<natures>\r\n"
+			+ "		<nature>org.eclipse.jdt.core.javanature</nature>\r\n"
+			+ "	</natures>\r\n"
+			+ "</projectDescription>";
 	
-	public static final String CLASSPATH = """
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="rsc"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
-		<attributes>
-			<attribute name="module" value="false"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="output" path=".bin"/>
-%INSERT%
-</classpath>
-			""";
+	public static final String CLASSPATH = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+			+ "<classpath>\r\n"
+			+ "	<classpathentry kind=\"src\" path=\"src\"/>\r\n"
+			+ "	<classpathentry kind=\"src\" path=\"rsc\"/>\r\n"
+			+ "	<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8\">\r\n"
+			+ "		<attributes>\r\n"
+			+ "			<attribute name=\"module\" value=\"false\"/>\r\n"
+			+ "		</attributes>\r\n"
+			+ "	</classpathentry>\r\n"
+			+ "	<classpathentry kind=\"output\" path=\".bin\"/>\r\n"
+			+ "%INSERT%\r\n"
+			+ "</classpath>";
 	
-	public static final String GITIGNORE = """
-			# Eclipse Files
-			libraries/
-			.settings/
-			.bin/
-			.run/
-			.runserver/
-			.classpath
-			.project
-			
-			# Minecraft Files
-			run/
-			
-			# Export Stuff
-			export/
-			""";
+	public static final String GITIGNORE = "# Eclipse Files\r\n"
+			+ "			libraries/\r\n"
+			+ "			.settings/\r\n"
+			+ "			.bin/\r\n"
+			+ "			.run/\r\n"
+			+ "			.runserver/\r\n"
+			+ "			.classpath\r\n"
+			+ "			.project\r\n"
+			+ "			\r\n"
+			+ "			# Minecraft Files\r\n"
+			+ "			run/\r\n"
+			+ "			\r\n"
+			+ "			# Export Stuff\r\n"
+			+ "			export/";
 	
-	public static final String CORE_PREFS = """
-eclipse.preferences.version=1
-org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
-org.eclipse.jdt.core.compiler.codegen.methodParameters=do not generate
-org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.8
-org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve
-org.eclipse.jdt.core.compiler.compliance=1.8
-org.eclipse.jdt.core.compiler.debug.lineNumber=generate
-org.eclipse.jdt.core.compiler.debug.localVariable=generate
-org.eclipse.jdt.core.compiler.debug.sourceFile=generate
-org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
-org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures=disabled
-org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
-org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures=warning
-org.eclipse.jdt.core.compiler.release=disabled
-org.eclipse.jdt.core.compiler.source=1.8
-			""";
+	public static final String CORE_PREFS = "eclipse.preferences.version=1\r\n"
+			+ "org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled\r\n"
+			+ "org.eclipse.jdt.core.compiler.codegen.methodParameters=do not generate\r\n"
+			+ "org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.8\r\n"
+			+ "org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve\r\n"
+			+ "org.eclipse.jdt.core.compiler.compliance=1.8\r\n"
+			+ "org.eclipse.jdt.core.compiler.debug.lineNumber=generate\r\n"
+			+ "org.eclipse.jdt.core.compiler.debug.localVariable=generate\r\n"
+			+ "org.eclipse.jdt.core.compiler.debug.sourceFile=generate\r\n"
+			+ "org.eclipse.jdt.core.compiler.problem.assertIdentifier=error\r\n"
+			+ "org.eclipse.jdt.core.compiler.problem.enablePreviewFeatures=disabled\r\n"
+			+ "org.eclipse.jdt.core.compiler.problem.enumIdentifier=error\r\n"
+			+ "org.eclipse.jdt.core.compiler.problem.reportPreviewFeatures=warning\r\n"
+			+ "org.eclipse.jdt.core.compiler.release=disabled\r\n"
+			+ "org.eclipse.jdt.core.compiler.source=1.8";
 	
-	public static final String LIBRARY_NATIVE = """
-<classpathentry kind="lib" path="%PATH%">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="%NATIVES%"/>
-		</attributes>
-	</classpathentry>
-			""";
+	public static final String LIBRARY_NATIVE = "<classpathentry kind=\"lib\" path=\"%PATH%\">\r\n"
+			+ "		<attributes>\r\n"
+			+ "			<attribute name=\"org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY\" value=\"%NATIVES%\"/>\r\n"
+			+ "		</attributes>\r\n"
+			+ "	</classpathentry>";
 	
-	public static final String RUN = """
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="GradleStart"/>
-    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="%PROJECT%"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="%PROJECT%"/>
-    <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:%PROJECT%}/.run"/>
-</launchConfiguration>
-			""";
+	public static final String RUN = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n"
+			+ "<launchConfiguration type=\"org.eclipse.jdt.launching.localJavaApplication\">\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MAIN_TYPE\" value=\"GradleStart\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MODULE_NAME\" value=\"%PROJECT%\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"%PROJECT%\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.WORKING_DIRECTORY\" value=\"${workspace_loc:%PROJECT%}/.run\"/>\r\n"
+			+ "</launchConfiguration>";
 	
 	public static final String LIBRARY = "\t<classpathentry kind=\"lib\" path=\"%PATH%\"/>";
 	
 	public static void main(String[] args) throws Exception {
-		final File out = new File(".");
+		final File out = new File("project");
 		if (out.exists()) Utils.deleteDirectory(out);
 		// Obtain versions.json and download dependencies
 		VersionJson versions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://launchermeta.mojang.com/v1/packages/f07e0f1228f79b9b04313fc5640cd952474ba6f5/1.12.2.json")), VersionJson.class);
