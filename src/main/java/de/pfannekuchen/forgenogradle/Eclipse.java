@@ -39,7 +39,7 @@ public class Eclipse {
 			+ "			<attribute name=\"module\" value=\"false\"/>\r\n"
 			+ "		</attributes>\r\n"
 			+ "	</classpathentry>\r\n"
-			+ "	<classpathentry kind=\"output\" path=\".bin\"/>\r\n"
+			+ "	<classpathentry kind=\"output\" path=\"build/bin\"/>\r\n"
 			+ "%INSERT%\r\n"
 			+ "</classpath>";
 	
