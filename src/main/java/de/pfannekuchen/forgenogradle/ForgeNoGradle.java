@@ -311,7 +311,7 @@ public class ForgeNoGradle {
 				else
 					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			}
-			partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MCFORGE.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MCFORGE_SRC.toURI()).getPath()) + '\n';
+			partclasspath += Eclipse.LIBRARY_SOURCE.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MCFORGE.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MCFORGE_SRC.toURI()).getPath()) + '\n';
 			Files.write(new File(PROJECT_DIR, ".classpath").toPath(), Eclipse.CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
 			System.out.println("[ForgeNoGradle] Finished creating Eclipse Files");
