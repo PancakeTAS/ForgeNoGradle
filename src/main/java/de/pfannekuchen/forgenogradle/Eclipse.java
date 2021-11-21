@@ -100,4 +100,10 @@ public class Eclipse {
 	 */
 	public static final String LIBRARY = "\t<classpathentry kind=\"lib\" path=\"%PATH%\"/>";
 	
+	/**
+	 * library with source for .classpath
+	 */
+	public static final String LIBRARY_SOURCE = "\t<classpathentry kind=\"lib\" path=\"%PATH%\" sourcepath=\"%SOURCE%\" />";
+	
+	
 }
