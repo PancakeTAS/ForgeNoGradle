@@ -204,7 +204,7 @@ public class ForgeNoGradle {
 			throw new ConnectionException("Failed downloading: https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar", e);
 		}
 		
-		System.out.println("[ForgeNoGradle] Downlaod the Forge MCP Version");
+		System.out.println("[ForgeNoGradle] Downloading the Forge MCP Version");
 		
 		try {
 			File mcpDir = new File(FNG_LIB_DIR, "mcp");
