@@ -43,7 +43,7 @@ public class Pong extends JFrame implements KeyListener {
 				while (true) {
 					// wait a frame
 					repaint();
-					Thread.sleep(8);
+					Thread.sleep(3);
 					// moving
 					if (isWPressed) y1 -= 0.005;
 					if (isSPressed) y1 += 0.005;
@@ -63,7 +63,7 @@ public class Pong extends JFrame implements KeyListener {
 					if (ballx > 0.95-0.05 && bally > y2 && bally < y2+size) rol = false;
 					
 					// move box 2
-					if (ballx > 0.5 && rol) {
+					if (ballx > 0.75 && rol) {
 						if (bally > y2+size/2) y2+=0.005;
 						else y2-=0.005;
 					}
@@ -145,14 +145,15 @@ public class Pong extends JFrame implements KeyListener {
 		}
 		// Text Background
 		g.setColor(Color.green);
-		int y = (int) (m.getHeight()*1.2);
+		int y = (int) (getHeight()-m.getHeight()*1.1);
+		g.setFont(new Font(Font.MONOSPACED, 2, 12));
+		m = g.getFontMetrics();
 		List<String> clone = new ArrayList<>(strings);
 		Collections.reverse(clone);
-		if (clone.size() > 40) clone = clone.subList(0, 40);
+		if (clone.size() > 80) clone = clone.subList(0, 80);
 		for (String string : clone) {
 			g.drawString(string.replace('\t', ' ').replaceAll("  ", ""), 15, y);
-			y += m.getHeight()*1.2;
-			//if (y > m.getHeight()) break;
+			y -= m.getHeight()*1.1;
 		}
 		gr.drawImage(img, 0, 0, null);
 	}
