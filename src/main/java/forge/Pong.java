@@ -167,6 +167,13 @@ public class Pong extends JFrame implements KeyListener {
 				super.println(x);
 			}
 		});
+		System.setErr(new PrintStream(System.err) {
+			@Override
+			public void println(String x) {
+				strings.add(x);
+				super.println(x);
+			}
+		});
 	}
 
 	@Override public void keyTyped(KeyEvent e) {}
