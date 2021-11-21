@@ -204,6 +204,21 @@ public class ForgeNoGradle {
 			throw new ConnectionException("Failed downloading: https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar", e);
 		}
 		
+		System.out.println("[ForgeNoGradle] Downlaod the Forge MCP Version");
+		
+		try {
+			File mcpDir = new File(FNG_LIB_DIR, "mcp");
+			mcpDir.mkdir();
+			File mcp = new File(mcpDir, "mcp.zip");
+			Files.copy(new URL("https://data.mgnet.work/forge/" + versions.id + "-mcp.zip").openStream(), mcp.toPath());
+			// extract
+			Utils.unzipFileAndDelete(mcpDir, "mcp.zip", "MCP");
+			mcp.delete();
+		} catch (IOException e) {
+	    	// catch io exceptions and rethrow them properly
+			throw new ConnectionException("Failed downloading: https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar", e);
+		}
+		
 		System.out.println("[ForgeNoGradle] Finished downloading the Game Assets");
 	}
 	
