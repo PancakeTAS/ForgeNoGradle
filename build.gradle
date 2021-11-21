@@ -3,9 +3,12 @@ plugins {
     id 'java-library'
 }
 
+// This has to run on any machine with any java installation independant of the IDE. So java 8 is the way to keep compatibility
 targetCompatibility = sourceCompatibility = 1.8
 
 repositories {
+    // We overridin'
+    maven { url 'https://maven.mgnet.work' }
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
@@ -15,6 +18,8 @@ dependencies {
 	implementation 'com.google.code.gson:gson:2.8.8'
 	// Use Zip4J for easy unzipping
 	implementation 'net.lingala.zip4j:zip4j:2.9.0'
+	// Fabric Decompiler
+	implementation 'net.fabricmc:fabric-fernflower:1.0.0'
 }
 
 jar {

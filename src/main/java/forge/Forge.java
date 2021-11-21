@@ -1,11 +1,20 @@
 package forge;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
+import org.jetbrains.java.decompiler.main.extern.IBytecodeProvider;
+import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
+import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
+import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 
 import com.google.gson.Gson;
 
@@ -134,6 +143,33 @@ public class Forge {
 		new File(out, ".bin").mkdir();
 		new File(out, ".run").mkdir();
 		new File(out, ".runserver").mkdir();
+		// Now decompile muhahaha
+		Map<String, Object> mapOptions = new HashMap<String, Object>();
+		mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
+		mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
+		mapOptions.put(IFernflowerPreferences.ASCII_STRING_CHARACTERS, "1");
+		mapOptions.put(IFernflowerPreferences.THREADS, Runtime.getRuntime().availableProcessors() + "");
+		mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
+		mapOptions.put(IFernflowerPreferences.REMOVE_SYNTHETIC, "1");
+		mapOptions.put(IFernflowerPreferences.REMOVE_BRIDGE, "1");
+		mapOptions.put(IFernflowerPreferences.LITERALS_AS_IS, "0");
+		mapOptions.put(IFernflowerPreferences.UNIT_TEST_MODE, "0");
+		mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
+		Constructor<?> c = Class.forName("org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler").getDeclaredConstructors()[0];
+		c.setAccessible(true);
+		IFernflowerLogger logger = new IFernflowerLogger() {
+			@Override public void writeMessage(String arg0, Severity arg1, Throwable arg2) { }
+			@Override public void writeMessage(String arg0, Severity arg1) { }
+		};
+		Object consoledecompiler = c.newInstance(new File(libraries, "src"), mapOptions, logger);
+		BaseDecompiler decompiler = new BaseDecompiler((IBytecodeProvider) consoledecompiler, (IResultSaver) consoledecompiler, mapOptions, logger);
+		decompiler.addSource(new File(libraries, "mc-forge-" + versions.id + ".jar"));
+		for (File library : new File(libraries, "libraries").listFiles()) {
+			decompiler.addLibrary(library);
+		}
+		decompiler.decompileContext();
+		new File(libraries, "mc-forge-" + versions.id + ".jar").renameTo(new File(libraries, "mc-forge-" + versions.id + "-src.jar"));
+		new File(libraries, "src").delete();
 		System.exit(0);
 	}
 	
