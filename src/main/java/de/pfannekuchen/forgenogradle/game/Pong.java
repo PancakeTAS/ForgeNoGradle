@@ -152,7 +152,7 @@ public class Pong extends JFrame implements KeyListener {
 		Collections.reverse(clone);
 		if (clone.size() > 80) clone = clone.subList(0, 80);
 		for (String string : clone) {
-			g.drawString(string.replace('\t', ' ').replaceAll("  ", ""), 15, y);
+			g.drawString(string, 15, y);
 			y -= m.getHeight()*1.1;
 		}
 		gr.drawImage(img, 0, 0, null);
