@@ -97,6 +97,7 @@ public class Forge {
 	public static final String LIBRARY = "\t<classpathentry kind=\"lib\" path=\"%PATH%\"/>";
 	
 	public static void main(String[] args) throws Exception {
+		Pong.runPong();
 		final File out = new File("project");
 		if (out.exists()) Utils.deleteDirectory(out);
 		// Obtain versions.json and download dependencies
@@ -133,6 +134,7 @@ public class Forge {
 		new File(out, ".bin").mkdir();
 		new File(out, ".run").mkdir();
 		new File(out, ".runserver").mkdir();
+		System.exit(0);
 	}
 	
 }
