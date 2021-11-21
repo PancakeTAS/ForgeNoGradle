@@ -19,7 +19,7 @@ dependencies {
 	// Use Zip4J for easy unzipping
 	implementation 'net.lingala.zip4j:zip4j:2.9.0'
 	// Fabric Decompiler
-	implementation 'net.fabricmc:fabric-fernflower:1.0.0'
+	implementation 'net.fabricmc:fabric-fernflower:1.0.1'
 }
 
 jar {

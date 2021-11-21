@@ -147,11 +147,12 @@ public class Pong extends JFrame implements KeyListener {
 		g.setColor(Color.green);
 		int y = (int) (m.getHeight()*1.2);
 		List<String> clone = new ArrayList<>(strings);
-		Collections.reverse(strings);
+		Collections.reverse(clone);
+		if (clone.size() > 40) clone = clone.subList(0, 40);
 		for (String string : clone) {
-			g.drawString(string, 15, y);
+			g.drawString(string.replace('\t', ' ').replaceAll("  ", ""), 15, y);
 			y += m.getHeight()*1.2;
-			if (y > m.getHeight()) break;
+			//if (y > m.getHeight()) break;
 		}
 		gr.drawImage(img, 0, 0, null);
 	}
@@ -170,7 +171,7 @@ public class Pong extends JFrame implements KeyListener {
 		System.setErr(new PrintStream(System.err) {
 			@Override
 			public void println(String x) {
-				strings.add(x);
+				if (x != null) strings.add(x);
 				super.println(x);
 			}
 		});

@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
+import org.jetbrains.java.decompiler.main.decompiler.PrintStreamLogger;
 import org.jetbrains.java.decompiler.main.extern.IBytecodeProvider;
-import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 
@@ -107,18 +107,22 @@ public class Forge {
 	
 	public static void main(String[] args) throws Exception {
 		Pong.runPong();
-		final File out = new File("project");
+		final File out = new File(".");
 		if (out.exists()) Utils.deleteDirectory(out);
 		// Obtain versions.json and download dependencies
+		System.out.println("[ForgeNoGradle] Downloading Json Files...");
 		VersionJson versions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://launchermeta.mojang.com/v1/packages/f07e0f1228f79b9b04313fc5640cd952474ba6f5/1.12.2.json")), VersionJson.class);
 		ForgeVersionJson forgeversions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL("https://data.mgnet.work/forge/" + versions.id + ".json")), ForgeVersionJson.class);
 		AssetsJson assets = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL(versions.assetIndex.url)), AssetsJson.class);
 		final File libraries = new File(out, "libraries");
 		JsonDownloader.downloadDeps(libraries, versions, forgeversions, assets);
+		System.out.println("[ForgeNoGradle] Downloading Patched Client...");
 		Files.copy(new URL("https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar").openStream(), new File(libraries, "mc-forge-" + versions.id + ".jar").toPath());
 		// Prepare Project File
+		System.out.println("[ForgeNoGradle] Preparing .project...");
 		Files.write(new File(out, ".project").toPath(), PROJECT.replaceFirst("%NAME%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare Classpath File
+		System.out.println("[ForgeNoGradle] Preparing .classpath...");
 		String partclasspath = "";
 		for (File lib : new File(libraries, "libraries").listFiles()) {
 			if (lib.getName().toLowerCase().contains("lwjgl-") || lib.getName().toLowerCase().contains("jinput") || lib.getName().toLowerCase().contains("text2speech"))
@@ -129,14 +133,18 @@ public class Forge {
 		partclasspath += LIBRARY.replaceFirst("%PATH%", out.toURI().relativize(new File(libraries, "mc-forge-" + versions.id + ".jar").toURI()).getPath()) + '\n';
 		Files.write(new File(out, ".classpath").toPath(), CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare settings file
+		System.out.println("[ForgeNoGradle] Preparing .settings/...");
 		new File(out, ".settings").mkdir();
 		Files.write(new File(out, ".settings/org.eclipse.jdt.core.prefs").toPath(), CORE_PREFS.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare .gitignore
+		System.out.println("[ForgeNoGradle] Preparing .gitignore...");
 		Files.write(new File(out, ".gitignore").toPath(), GITIGNORE.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Prepare launch files
+		System.out.println("[ForgeNoGradle] Preparing *.launch...");
 		Files.write(new File(out, out.getName() + "-" + versions.id + ".launch").toPath(), RUN.replaceAll("%PROJECT%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		Files.write(new File(out, out.getName() + "-" + versions.id + "-server.launch").toPath(), RUN.replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/.run"), "/.runserver").replaceAll("%PROJECT%", out.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 		// Create source directories
+		System.out.println("[ForgeNoGradle] Preparing more directories for eclipse...");
 		new File(out, "src").mkdir();
 		new File(out, "rsc").mkdir();
 		// Finally create a build and run directory
@@ -144,6 +152,7 @@ public class Forge {
 		new File(out, ".run").mkdir();
 		new File(out, ".runserver").mkdir();
 		// Now decompile muhahaha
+		System.out.println("[ForgeNoGradle] Preparing decompiler...");
 		Map<String, Object> mapOptions = new HashMap<String, Object>();
 		mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
 		mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
@@ -157,19 +166,20 @@ public class Forge {
 		mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
 		Constructor<?> c = Class.forName("org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler").getDeclaredConstructors()[0];
 		c.setAccessible(true);
-		IFernflowerLogger logger = new IFernflowerLogger() {
-			@Override public void writeMessage(String arg0, Severity arg1, Throwable arg2) { }
-			@Override public void writeMessage(String arg0, Severity arg1) { }
-		};
+		PrintStreamLogger logger = new PrintStreamLogger(System.out);
+		System.out.println("[ForgeNoGradle] Creating decompiler...");
 		Object consoledecompiler = c.newInstance(new File(libraries, "src"), mapOptions, logger);
 		BaseDecompiler decompiler = new BaseDecompiler((IBytecodeProvider) consoledecompiler, (IResultSaver) consoledecompiler, mapOptions, logger);
 		decompiler.addSource(new File(libraries, "mc-forge-" + versions.id + ".jar"));
 		for (File library : new File(libraries, "libraries").listFiles()) {
 			decompiler.addLibrary(library);
 		}
+		System.out.println("[ForgeNoGradle] Decompiling...");
 		decompiler.decompileContext();
+		System.out.println("[ForgeNoGradle] Moving files around...");
 		new File(libraries, "mc-forge-" + versions.id + ".jar").renameTo(new File(libraries, "mc-forge-" + versions.id + "-src.jar"));
 		new File(libraries, "src").delete();
+		Thread.sleep(4000);
 		System.exit(0);
 	}
 	
