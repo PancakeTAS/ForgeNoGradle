@@ -102,6 +102,21 @@ public class ForgeNoGradle {
 	private static final File MCFORGE_SRC = new File(FNG_LIB_DIR, "mc-forge-" + VERSION + "-src.jar");
 	
 	/**
+	 * The Forge Client/Server Jar
+	 */
+	private static final File MIXIN = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + ".jar");
+	
+	/**
+	 * The Forge Client/Server Source Jar
+	 */
+	private static final File MIXIN_SRC = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + "-src.jar");
+	
+	/**
+	 * The Forge Client/Server Source Jar
+	 */
+	private static final File MIXIN_JD = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + "-jd.jar");
+	
+	/**
 	 * Url for the version json
 	 */
 	private static final String VERSION_URL = "https://launchermeta.mojang.com/v1/packages/f07e0f1228f79b9b04313fc5640cd952474ba6f5/" + VERSION + ".json";
@@ -219,6 +234,17 @@ public class ForgeNoGradle {
 			throw new ConnectionException("Failed downloading: https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar", e);
 		}
 		
+		System.out.println("[ForgeNoGradle] Downloading Mixin");
+		
+		try {
+			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2.jar")), MIXIN.toPath());
+			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2-sources.jar")), MIXIN_SRC.toPath());
+			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2-javadoc.jar")), MIXIN_JD.toPath());
+		} catch (IOException e) {
+	    	// catch io exceptions and rethrow them properly
+			throw new ConnectionException("Failed downloading mixin", e);
+		}
+		
 		System.out.println("[ForgeNoGradle] Finished downloading the Game Assets");
 	}
 	
@@ -312,6 +338,7 @@ public class ForgeNoGradle {
 					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			}
 			partclasspath += Eclipse.LIBRARY_SOURCE.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MCFORGE.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MCFORGE_SRC.toURI()).getPath()) + '\n';
+			partclasspath += Eclipse.LIBRARY_FULL.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MIXIN.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MIXIN_SRC.toURI()).getPath()).replaceFirst("%JAVADOC%", PROJECT_DIR.toURI().relativize(MIXIN_JD.toURI()).getPath()) + '\n';
 			Files.write(new File(PROJECT_DIR, ".classpath").toPath(), Eclipse.CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
 			System.out.println("[ForgeNoGradle] Finished creating Eclipse Files");

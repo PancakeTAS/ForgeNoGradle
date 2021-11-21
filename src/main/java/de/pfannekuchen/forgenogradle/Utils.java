@@ -3,8 +3,10 @@ package de.pfannekuchen.forgenogradle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -47,6 +49,18 @@ public class Utils {
 		else if (stringOs.contains("nux")) return Os.LINUX;
 		// throw error if none found
 		throw new OperatingSystemException("Unsupported Operating System: " + stringOs);
+	}
+	
+	/**
+	 * Opens an input stream with a user agent
+	 * @param url URL
+	 * @return URL Stream
+	 * @throws IOException urgh
+	 */
+	public static InputStream userAgentDownload(URL url) throws IOException {
+		URLConnection c = url.openConnection();
+		c.setRequestProperty("User-Agent", "Mozilla/5.0 (aka; mixin download; java downloader)");
+		return c.getInputStream();
 	}
 	
 	/**
