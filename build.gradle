@@ -1,6 +1,8 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    // Apply the shadow plugin for much better exporting
+	id "com.github.johnrengelman.shadow" version "7.1.0"
 }
 
 // This has to run on any machine with any java installation independant of the IDE. So java 8 is the way to keep compatibility
