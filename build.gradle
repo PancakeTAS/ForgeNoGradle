@@ -26,6 +26,6 @@ dependencies {
 
 jar {
 	manifest {
-		attributes("Main-Class": "forge.Forge")
+		attributes("Main-Class": "de.pfannekuchen.forgenogradle.ForgeNoGradle")
 	}
 }
