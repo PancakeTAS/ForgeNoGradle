@@ -10,3 +10,4 @@ project/
 # Ignore Gradle build output directory
 build
 bin
+src/main/resources/forgeapi.lib

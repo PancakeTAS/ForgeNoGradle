@@ -28,6 +28,14 @@ dependencies {
 	implementation 'net.fabricmc:fabric-fernflower:1.0.1'
 }
 
+// Create a Task that moves the API into the resources dir
+task updateAPI(type: Copy) {
+    from 'API/build/libs/forgeapi.lib'
+    into 'src/main/resources'
+}
+updateAPI.group = "build"
+
+
 jar {
 	manifest {
 		attributes("Main-Class": "de.pfannekuchen.forgenogradle.ForgeNoGradle")

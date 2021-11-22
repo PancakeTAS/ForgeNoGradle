@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -102,19 +101,24 @@ public class ForgeNoGradle {
 	private static final File MCFORGE_SRC = new File(FNG_LIB_DIR, "mc-forge-" + VERSION + "-src.jar");
 	
 	/**
-	 * The Forge Client/Server Jar
+	 * The Mixin Jar
 	 */
 	private static final File MIXIN = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + ".jar");
 	
 	/**
-	 * The Forge Client/Server Source Jar
+	 * The Mixin Source Jar
 	 */
 	private static final File MIXIN_SRC = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + "-src.jar");
 	
 	/**
-	 * The Forge Client/Server Source Jar
+	 * The Mixin Javadoc Jar
 	 */
 	private static final File MIXIN_JD = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + "-jd.jar");
+	
+	/**
+	 * The Mixin annotation processor
+	 */
+	private static final File MIXIN_P = new File(FNG_LIB_DIR, "mixin-8.2-" + VERSION + "-p.jar");
 	
 	/**
 	 * Url for the version json
@@ -125,6 +129,11 @@ public class ForgeNoGradle {
 	 * Url for the forge dependency json
 	 */
 	private static final String FORGE_URL = "https://data.mgnet.work/forge/" + VERSION + ".json";
+	
+	/**
+	 * Base URL for all Mixin downloads
+	 */
+	private static final String MIXIN_BASE_URL = "https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2";
 	
 	/**
 	 * Main Class for managing the order of execution
@@ -205,7 +214,8 @@ public class ForgeNoGradle {
 			AssetsJson assets = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL(versions.assetIndex.url)), AssetsJson.class);
 			// Download using these JSON files
 			GameDownloader.downloadDeps(versions, forgeversions, assets, NATIVES_DIR, LIBRARIES_DIR, ASSETS_DIR);
-		} catch (JsonSyntaxException | MalformedURLException e) {
+			Files.copy(ForgeNoGradle.class.getResourceAsStream("/forgeapi.lib"), new File(LIBRARIES_DIR, "forgeapi.jar").toPath());
+		} catch (JsonSyntaxException | IOException e) {
 	    	// catch exceptions and rethrow them properly
 			throw new ConnectionException("Unable to download files", e);
 		}
@@ -237,9 +247,10 @@ public class ForgeNoGradle {
 		System.out.println("[ForgeNoGradle] Downloading Mixin");
 		
 		try {
-			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2.jar")), MIXIN.toPath());
-			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2-sources.jar")), MIXIN_SRC.toPath());
-			Files.copy(Utils.userAgentDownload(new URL("https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2-javadoc.jar")), MIXIN_JD.toPath());
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + ".jar")), MIXIN.toPath());
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-sources.jar")), MIXIN_SRC.toPath());
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-javadoc.jar")), MIXIN_JD.toPath());
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-processor.jar")), MIXIN_P.toPath());
 		} catch (IOException e) {
 	    	// catch io exceptions and rethrow them properly
 			throw new ConnectionException("Failed downloading mixin", e);
@@ -314,17 +325,24 @@ public class ForgeNoGradle {
 			// Prepare settings file
 			new File(PROJECT_DIR, ".settings").mkdir();
 			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.core.prefs").toPath(), Eclipse.CORE_PREFS.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-
+			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.apt.core.prefs").toPath(), Eclipse.APT_CORE_PREFS.replaceFirst("%SRG%", new File(FNG_LIB_DIR, "mcp/mcp-srg.srg").getAbsolutePath().replaceAll("\\\\", "/")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			
 			System.out.println("[ForgeNoGradle] Preparing .gitignore...");
 			
 			// Prepare .gitignore
 			Files.write(new File(PROJECT_DIR, ".gitignore").toPath(), Eclipse.GITIGNORE.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			
+			System.out.println("[ForgeNoGradle] Preparing .factorypath...");
+			
+			// Prepare .gitignore
+			Files.write(new File(PROJECT_DIR, ".factorypath").toPath(), Eclipse.FACTOY_PATH.replaceFirst("%PROCESSOR%", MIXIN_P.getAbsolutePath().replace('\\', '/')).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			
 			System.out.println("[ForgeNoGradle] Preparing *.launch...");
 			
 			// Prepare launch files
-			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + ".launch").toPath(), Eclipse.RUN.replaceAll("%PROJECT%",PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-server.launch").toPath(), Eclipse.RUN.replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/run"), "/run-server").replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + ".launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN_P%", MIXIN_P.getName()).replaceAll("%PROJECT%",PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-server.launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN_P%", MIXIN_P.getName()).replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/run"), "/run-server").replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-export.launch").toPath(), Eclipse.EXPORT.replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			
 			System.out.println("[ForgeNoGradle] Preparing .classpath...");
 			

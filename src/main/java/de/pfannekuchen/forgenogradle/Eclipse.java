@@ -40,6 +40,11 @@ public class Eclipse {
 			+ "		</attributes>\r\n"
 			+ "	</classpathentry>\r\n"
 			+ "	<classpathentry kind=\"output\" path=\"build/bin\"/>\r\n"
+			+ "	<classpathentry kind=\"src\" path=\"build/.apt_generated\">"
+			+ "		<attributes>"
+			+ "			<attribute name=\"optional\" value=\"true\"/>"
+			+ "		</attributes>"
+			+ "	</classpathentry>"
 			+ "%INSERT%\r\n"
 			+ "</classpath>";
 	
@@ -51,9 +56,13 @@ public class Eclipse {
 			+ "			run/\r\n"
 			+ "			build/\r\n"
 			+ "			.settings/\r\n"
+			+ "			.factorypath\r\n"
 			+ "			.classpath\r\n"
 			+ "			.project\r\n"
 			+ "			\r\n";	
+	
+	public static final String FACTOY_PATH = "<factorypath><factorypathentry kind=\"EXTJAR\" id=\"%PROCESSOR%\" enabled=\"true\" runInBatchMode=\"false\"/></factorypath>";
+	
 	/**
 	 * .settings/org.eclipse.jdt.core.prefs
 	 */
@@ -74,6 +83,19 @@ public class Eclipse {
 			+ "org.eclipse.jdt.core.compiler.source=1.8";
 	
 	/**
+	 * .settings/org.eclipse.jdt.apt.core.prefs
+	 */
+	public static final String APT_CORE_PREFS = "eclipse.preferences.version=1\r\n"
+			+ "org.eclipse.jdt.apt.aptEnabled=true\r\n"
+			+ "org.eclipse.jdt.apt.genSrcDir=build/.apt_generated\r\n"
+			+ "org.eclipse.jdt.apt.genTestSrcDir=build/.apt_generated_tests\r\n"
+			+ "org.eclipse.jdt.apt.processorOptions/outRefMapFile=refmap.json\r\n"
+			+ "org.eclipse.jdt.apt.processorOptions/reobfSrgFile=%SRG%\r\n"
+			+ "org.eclipse.jdt.apt.reconcileEnabled=true\r\n"
+			+ "";
+	
+	
+	/**
 	 * native library for .classpath
 	 */
 	public static final String LIBRARY_NATIVE = "<classpathentry kind=\"lib\" path=\"%PATH%\">\r\n"
@@ -91,8 +113,19 @@ public class Eclipse {
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MODULE_NAME\" value=\"%PROJECT%\"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"%PROJECT%\"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS\" value=\"--tweakClass org.spongepowered.asm.launch.MixinTweaker --mixin mixins.modid.json --assetsDir ../build/assets/\"/>\r\n"
-			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-Djava.library.path=../build/natives\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-Djava.library.path=../build/natives -javaagent:../build/%MIXIN_P% \"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.WORKING_DIRECTORY\" value=\"${workspace_loc:%PROJECT%}/run\"/>\r\n"
+			+ "</launchConfiguration>";
+	
+	/**
+	 * export-1.12.2.launch
+	 */
+	public static final String EXPORT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n"
+			+ "<launchConfiguration type=\"org.eclipse.jdt.launching.localJavaApplication\">\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MAIN_TYPE\" value=\"de.pfannekuchen.forgenogradleapi.ExportMain\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MODULE_NAME\" value=\"%PROJECT%\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"%PROJECT%\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.WORKING_DIRECTORY\" value=\"${workspace_loc:%PROJECT%}/build\"/>\r\n"
 			+ "</launchConfiguration>";
 	
 	/**

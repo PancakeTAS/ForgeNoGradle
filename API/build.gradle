@@ -9,6 +9,11 @@ group = 'de.pfannekuchen'
 version = '1.0.0-SNAPSHOT'
 archivesBaseName = 'ForgeNoGradleAPI'
 
+// Rename Jar
+shadowJar {
+	archiveFileName = "forgeapi.lib"
+}
+
 // This has to run on any machine with any java installation independant of the IDE. So java 8 is the way to keep compatibility
 targetCompatibility = sourceCompatibility = 1.8
 
