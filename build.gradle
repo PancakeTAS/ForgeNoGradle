@@ -9,7 +9,7 @@ plugins {
 targetCompatibility = sourceCompatibility = 1.8
 
 group = 'de.pfannekuchen'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0'
 archivesBaseName = 'ForgeNoGradle'
 
 repositories {

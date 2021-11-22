@@ -52,14 +52,14 @@ public class Eclipse {
 	 * .gitignore
 	 */
 	public static final String GITIGNORE = "# Eclipse Files\r\n"
-			+ "			run-server/\r\n"
-			+ "			run/\r\n"
-			+ "			build/\r\n"
-			+ "			.settings/\r\n"
-			+ "			.factorypath\r\n"
-			+ "			.classpath\r\n"
-			+ "			.project\r\n"
-			+ "			\r\n";	
+			+ "run-server/\r\n"
+			+ "run/\r\n"
+			+ "build/\r\n"
+			+ "*.launch\r\n"
+			+ ".settings/\r\n"
+			+ ".factorypath\r\n"
+			+ ".classpath\r\n"
+			+ ".project\r\n";
 	
 	public static final String FACTOY_PATH = "<factorypath><factorypathentry kind=\"EXTJAR\" id=\"%PROCESSOR%\" enabled=\"true\" runInBatchMode=\"false\"/></factorypath>";
 	
@@ -112,8 +112,8 @@ public class Eclipse {
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MAIN_TYPE\" value=\"GradleStart\"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.MODULE_NAME\" value=\"%PROJECT%\"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROJECT_ATTR\" value=\"%PROJECT%\"/>\r\n"
-			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS\" value=\"--tweakClass org.spongepowered.asm.launch.MixinTweaker --mixin mixins.modid.json --assetsDir ../build/assets/\"/>\r\n"
-			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-Djava.library.path=../build/natives -javaagent:../build/%MIXIN_P% \"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS\" value=\"--tweakClass org.spongepowered.asm.launch.MixinTweaker --mixin mixin.json --assetsDir ../build/assets/\"/>\r\n"
+			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.VM_ARGUMENTS\" value=\"-Djava.library.path=../build/natives -javaagent:../build/%MIXIN% \"/>\r\n"
 			+ "    <stringAttribute key=\"org.eclipse.jdt.launching.WORKING_DIRECTORY\" value=\"${workspace_loc:%PROJECT%}/run\"/>\r\n"
 			+ "</launchConfiguration>";
 	

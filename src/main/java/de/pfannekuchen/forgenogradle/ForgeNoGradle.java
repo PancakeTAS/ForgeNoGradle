@@ -38,7 +38,7 @@ public class ForgeNoGradle {
 	/**
 	 * Main Project Folder
 	 */
-	private static final File PROJECT_DIR = new File("project"); // "project" only temporary, this has to be replaced with "." before releasing
+	private static final File PROJECT_DIR = new File(new File("").getAbsolutePath()); // "project" only temporary, this has to be replaced with "." before releasing
 	
 	/**
 	 * Minecraft Client run directory
@@ -142,7 +142,7 @@ public class ForgeNoGradle {
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		/* FOR TESTING DELETE THE PROJECT DIR */
-		if (PROJECT_DIR.exists()) Utils.deleteDirectory(PROJECT_DIR);
+//		if (PROJECT_DIR.exists()) Utils.deleteDirectory(PROJECT_DIR);
 		
 		// Run Pong
 		Pong.runPong();
@@ -340,8 +340,8 @@ public class ForgeNoGradle {
 			System.out.println("[ForgeNoGradle] Preparing *.launch...");
 			
 			// Prepare launch files
-			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + ".launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN_P%", MIXIN_P.getName()).replaceAll("%PROJECT%",PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-server.launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN_P%", MIXIN_P.getName()).replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/run"), "/run-server").replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + ".launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN%", MIXIN.getName()).replaceAll("%PROJECT%",PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-server.launch").toPath(), Eclipse.RUN.replaceFirst("%MIXIN%", MIXIN.getName()).replaceFirst("GradleStart", "GradleStartServer").replaceAll(Pattern.quote("/run"), "/run-server").replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			Files.write(new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-export.launch").toPath(), Eclipse.EXPORT.replaceAll("%PROJECT%", PROJECT_DIR.getName()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			
 			System.out.println("[ForgeNoGradle] Preparing .classpath...");
