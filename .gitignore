@@ -1,0 +1,13 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+.settings
+.classpath
+.project
+
+# Sub Project
+project/
+
+# Ignore Gradle build output directory
+build
+bin
+src/main/resources/forgeapi.lib

@@ -1,0 +1,34 @@
+plugins {
+    // Apply the java-library plugin for API and implementation separation.
+    id 'java-library'
+    // Apply the shadow plugin for much better exporting
+	id "com.github.johnrengelman.shadow"
+}
+
+group = 'de.pfannekuchen'
+version = '1.0.0'
+archivesBaseName = 'ForgeNoGradleAPI'
+
+// Rename Jar
+shadowJar {
+	archiveFileName = "forgeapi.lib"
+}
+
+// This has to run on any machine with any java installation independant of the IDE. So java 8 is the way to keep compatibility
+targetCompatibility = sourceCompatibility = 1.8
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+	// Reobfuscation
+	implementation ('net.md-5:SpecialSource:1.9.0') {
+		exclude module: 'asm-commons'
+	}
+	// ASM Replacement
+	implementation ('org.ow2.asm:asm-debug-all:5.2')
+	// Use Zip4J for easy un/zipping
+	implementation 'net.lingala.zip4j:zip4j:2.9.0'
+}
