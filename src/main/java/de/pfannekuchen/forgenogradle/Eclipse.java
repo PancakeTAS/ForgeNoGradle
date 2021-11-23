@@ -58,6 +58,8 @@ public class Eclipse {
 			+ "*.launch\r\n"
 			+ ".settings/\r\n"
 			+ ".factorypath\r\n"
+			+ ".apt_generated\r\n"
+			+ ".apt_generated_tests\r\n"
 			+ ".classpath\r\n"
 			+ ".project\r\n";
 	
@@ -88,8 +90,8 @@ public class Eclipse {
 	 */
 	public static final String APT_CORE_PREFS = "eclipse.preferences.version=1\r\n"
 			+ "org.eclipse.jdt.apt.aptEnabled=true\r\n"
-			+ "org.eclipse.jdt.apt.genSrcDir=build/.apt_generated\r\n"
-			+ "org.eclipse.jdt.apt.genTestSrcDir=build/.apt_generated_tests\r\n"
+			+ "org.eclipse.jdt.apt.genSrcDir=.apt_generated\r\n"
+			+ "org.eclipse.jdt.apt.genTestSrcDir=.apt_generated_tests\r\n"
 			+ "org.eclipse.jdt.apt.processorOptions/outRefMapFile=refmap.json\r\n"
 			+ "org.eclipse.jdt.apt.processorOptions/reobfSrgFile=%SRG%\r\n"
 			+ "org.eclipse.jdt.apt.reconcileEnabled=true\r\n"

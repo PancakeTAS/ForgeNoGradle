@@ -325,7 +325,7 @@ public class ForgeNoGradle {
 			// Prepare settings file
 			new File(PROJECT_DIR, ".settings").mkdir();
 			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.core.prefs").toPath(), Eclipse.CORE_PREFS.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.apt.core.prefs").toPath(), Eclipse.APT_CORE_PREFS.replaceFirst("%SRG%", new File(FNG_LIB_DIR, "mcp/mcp-srg.srg").getAbsolutePath().replaceAll("\\\\", "/")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.apt.core.prefs").toPath(), Eclipse.APT_CORE_PREFS.replaceFirst("%SRG%", new File(FNG_LIB_DIR, "mcp/mcp-srg.srg").getAbsolutePath().replaceAll(Pattern.quote(":"), "\\:").replaceAll(Pattern.quote("\\"), "/")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			
 			System.out.println("[ForgeNoGradle] Preparing .gitignore...");
 			
