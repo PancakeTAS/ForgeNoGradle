@@ -73,6 +73,7 @@ public class Eclipse {
 			+ "org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve\r\n"
 			+ "org.eclipse.jdt.core.compiler.compliance=1.8\r\n"
 			+ "org.eclipse.jdt.core.compiler.debug.lineNumber=generate\r\n"
+			+ "org.eclipse.jdt.core.compiler.processAnnotations=enabled\r\n"
 			+ "org.eclipse.jdt.core.compiler.debug.localVariable=generate\r\n"
 			+ "org.eclipse.jdt.core.compiler.debug.sourceFile=generate\r\n"
 			+ "org.eclipse.jdt.core.compiler.problem.assertIdentifier=error\r\n"
