@@ -39,7 +39,7 @@ public class ForgeNoGradle {
 	/**
 	 * Main Project Folder
 	 */
-	private static final File PROJECT_DIR = new File(new File("project").getAbsolutePath()); // "project" only temporary, this has to be replaced with "." before releasing
+	private static final File PROJECT_DIR = new File(new File("").getAbsolutePath()); // "project" only temporary, this has to be replaced with "." before releasing
 	
 	/**
 	 * Minecraft Client run directory
