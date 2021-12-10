@@ -94,6 +94,7 @@ public class Eclipse {
 			+ "org.eclipse.jdt.apt.genTestSrcDir=.apt_generated_tests\r\n"
 			+ "org.eclipse.jdt.apt.processorOptions/outRefMapFile=refmap.json\r\n"
 			+ "org.eclipse.jdt.apt.processorOptions/reobfSrgFile=%SRG%\r\n"
+			+ "org.eclipse.jdt.apt.processorOptions/outSrgFile=searge.srg\r\n"
 			+ "org.eclipse.jdt.apt.reconcileEnabled=true\r\n"
 			+ "";
 	

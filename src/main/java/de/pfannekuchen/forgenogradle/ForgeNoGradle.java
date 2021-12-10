@@ -72,6 +72,11 @@ public class ForgeNoGradle {
 	private static final File RSC_DIR = new File(PROJECT_DIR, "rsc");
 	
 	/**
+	 * User libraries directory
+	 */
+	private static final File USER_LIBRARIES_DIR = new File(PROJECT_DIR, "libs");
+	
+	/**
 	 * Minecraft Forge libraries directory
 	 */
 	private static final File LIBRARIES_DIR = new File(FNG_LIB_DIR, "libraries");
@@ -213,7 +218,7 @@ public class ForgeNoGradle {
 			else f.delete();
 		}
 		// Delete Jars in build/
-		for (File f2 : FNG_LIB_DIR.listFiles()) {
+		if (FNG_LIB_DIR.exists()) for (File f2 : FNG_LIB_DIR.listFiles()) {
 			if (!f2.exists()) continue;
 			if (f2.getName().toLowerCase().endsWith(".jar")) f2.delete();
 		}
@@ -398,6 +403,9 @@ public class ForgeNoGradle {
 				else
 					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			}
+			if (USER_LIBRARIES_DIR.exists()) 
+				for (File lib : USER_LIBRARIES_DIR.listFiles()) 
+					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			partclasspath += Eclipse.LIBRARY_SOURCE.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MCFORGE.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MCFORGE_SRC.toURI()).getPath()) + '\n';
 			partclasspath += Eclipse.LIBRARY_FULL.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MIXIN.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MIXIN_SRC.toURI()).getPath()).replaceFirst("%JAVADOC%", PROJECT_DIR.toURI().relativize(MIXIN_JD.toURI()).getPath()) + '\n';
 			Files.write(new File(PROJECT_DIR, ".classpath").toPath(), Eclipse.CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);

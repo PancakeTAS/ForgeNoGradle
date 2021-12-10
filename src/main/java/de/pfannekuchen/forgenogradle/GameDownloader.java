@@ -44,6 +44,10 @@ public class GameDownloader {
 		// Detect operating system for native libraries
 		Os os = Utils.getOs();
 		System.out.println(String.format("[GameDownloader] Detected operating system: %s", os.name()));
+		// Create the files
+		natives.mkdirs();
+		libs.mkdirs();
+		assetsdir.mkdirs();
 		// Sort out dependencies based on the operating system
 		List<Library> dependencies = sortOutDependencies(in.libraries, os);
 		System.out.println(String.format("[GameDownloader] Fetched %d dependencies", dependencies.size()));
