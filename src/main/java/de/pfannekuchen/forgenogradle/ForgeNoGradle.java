@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +70,11 @@ public class ForgeNoGradle {
 	 * Eclipse Resource Folder
 	 */
 	private static final File RSC_DIR = new File(PROJECT_DIR, "rsc");
+	
+	/**
+	 * User libraries directory
+	 */
+	private static final File USER_LIBRARIES_DIR = new File(PROJECT_DIR, "libs");
 	
 	/**
 	 * Minecraft Forge libraries directory
@@ -136,13 +142,18 @@ public class ForgeNoGradle {
 	private static final String MIXIN_BASE_URL = "https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.2/mixin-0.8.2";
 	
 	/**
+	 * Whether dependencies should be skipped
+	 */
+	public static boolean skipLibs;
+	
+	/**
 	 * Main Class for managing the order of execution
 	 * @param args Main
 	 * @throws InterruptedException In case someone exites early
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		/* FOR TESTING DELETE THE PROJECT DIR */
-//		if (PROJECT_DIR.exists()) Utils.deleteDirectory(PROJECT_DIR);
+		// Delete Folder Structore
+		deleteFolderStructure();
 		
 		// Run Pong
 		Pong.runPong();
@@ -170,9 +181,8 @@ public class ForgeNoGradle {
 		
 		System.out.println("=========== 4/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
 		System.out.println("Exiting...");
-		
+
 		// Exit
-		Thread.sleep(3000);
 		System.exit(0);
 		
 	}
@@ -180,19 +190,56 @@ public class ForgeNoGradle {
 	/**
 	 * Creates the folder structure
 	 */
+	private static void deleteFolderStructure() {
+		System.out.println("[ForgeNoGradle] Deleting Project File Structure...");
+		
+		// Delete folders and files that require an update
+		if (BIN_DIR.exists()) Utils.deleteDirectory(BIN_DIR);
+		if (LIBRARIES_DIR.exists() && ASSETS_DIR.exists() && NATIVES_DIR.exists()) skipLibs = true; 
+		final File[] delete = new File[] {
+			new File(PROJECT_DIR, ".project"),
+			new File(PROJECT_DIR, ".classpath"),
+			new File(PROJECT_DIR, ".factorypath"),
+			new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + ".launch"),
+			new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-export.launch"),
+			new File(PROJECT_DIR, PROJECT_DIR.getName() + "-" + VERSION + "-server.launch"),
+			new File(PROJECT_DIR, ".gitignore"),
+			new File(PROJECT_DIR, ".settings"),
+			new File(PROJECT_DIR, ".apt_generated"),
+			new File(PROJECT_DIR, ".apt_generated_tests"),
+			new File(PROJECT_DIR, "run"),
+			new File(PROJECT_DIR, "run-server"),
+			new File(PROJECT_DIR, "build/mcp")
+			
+		};
+		for (File f : delete) {
+			if (!f.exists()) continue;
+			if (f.isDirectory()) Utils.deleteDirectory(f);
+			else f.delete();
+		}
+		// Delete Jars in build/
+		if (FNG_LIB_DIR.exists()) for (File f2 : FNG_LIB_DIR.listFiles()) {
+			if (!f2.exists()) continue;
+			if (f2.getName().toLowerCase().endsWith(".jar")) f2.delete();
+		}
+		
+		System.out.println("[ForgeNoGradle] Finished deleting file structure");
+	}
+	
+	/**
+	 * Creates the folder structure
+	 */
 	private static void createFolderStructure() {
-		System.out.println("[ForgeNoGradle] Create Project Folder Structure");
+		System.out.println("[ForgeNoGradle] Create Project Folder Structure...");
 		
 		// Create all required folders
-		PROJECT_DIR.mkdir();
 		RUN_DIR.mkdir();
 		RUN_SERVER_DIR.mkdir();
-		FNG_LIB_DIR.mkdir();
-		LIBRARIES_DIR.mkdir();
-		NATIVES_DIR.mkdir();
-		ASSETS_DIR.mkdir();
-		SRC_DIR.mkdir();
-		RSC_DIR.mkdir();
+		if (!FNG_LIB_DIR.exists()) FNG_LIB_DIR.mkdir();
+		if (!NATIVES_DIR.exists()) NATIVES_DIR.mkdir();
+		if (!ASSETS_DIR.exists()) ASSETS_DIR.mkdir();
+		if (!SRC_DIR.exists()) SRC_DIR.mkdir();
+		if (!RSC_DIR.exists()) RSC_DIR.mkdir();
 		BIN_DIR.mkdir();
 		
 		System.out.println("[ForgeNoGradle] Finished creating folder structure");
@@ -213,8 +260,9 @@ public class ForgeNoGradle {
 			ForgeVersionJson forgeversions = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL(FORGE_URL)), ForgeVersionJson.class);
 			AssetsJson assets = gson.fromJson(Utils.readAllBytesAsStringFromURL(new URL(versions.assetIndex.url)), AssetsJson.class);
 			// Download using these JSON files
-			GameDownloader.downloadDeps(versions, forgeversions, assets, NATIVES_DIR, LIBRARIES_DIR, ASSETS_DIR);
-			Files.copy(ForgeNoGradle.class.getResourceAsStream("/forgeapi.lib"), new File(LIBRARIES_DIR, "forgeapi.jar").toPath());
+			if (!skipLibs) GameDownloader.downloadDeps(versions, forgeversions, assets, NATIVES_DIR, LIBRARIES_DIR, ASSETS_DIR);
+			else System.out.println("[ForgeNoGradle] Skipped downloading Game Assets and Libraries");
+			Files.copy(ForgeNoGradle.class.getResourceAsStream("/forgeapi.lib"), new File(LIBRARIES_DIR, "forgeapi.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (JsonSyntaxException | IOException e) {
 	    	// catch exceptions and rethrow them properly
 			throw new ConnectionException("Unable to download files", e);
@@ -325,7 +373,7 @@ public class ForgeNoGradle {
 			// Prepare settings file
 			new File(PROJECT_DIR, ".settings").mkdir();
 			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.core.prefs").toPath(), Eclipse.CORE_PREFS.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.apt.core.prefs").toPath(), Eclipse.APT_CORE_PREFS.replaceFirst("%SRG%", new File(FNG_LIB_DIR, "mcp/mcp-srg.srg").getAbsolutePath().replaceAll("\\\\", "/")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+			Files.write(new File(PROJECT_DIR, ".settings/org.eclipse.jdt.apt.core.prefs").toPath(), Eclipse.APT_CORE_PREFS.replaceFirst("%SRG%", new File(FNG_LIB_DIR, "mcp/mcp-srg.srg").getAbsolutePath().replaceAll(Pattern.quote(":"), "\\:").replaceAll(Pattern.quote("\\"), "/")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 			
 			System.out.println("[ForgeNoGradle] Preparing .gitignore...");
 			
@@ -355,6 +403,9 @@ public class ForgeNoGradle {
 				else
 					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			}
+			if (USER_LIBRARIES_DIR.exists()) 
+				for (File lib : USER_LIBRARIES_DIR.listFiles()) 
+					partclasspath += Eclipse.LIBRARY.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(lib.toURI()).getPath()) + '\n';
 			partclasspath += Eclipse.LIBRARY_SOURCE.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MCFORGE.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MCFORGE_SRC.toURI()).getPath()) + '\n';
 			partclasspath += Eclipse.LIBRARY_FULL.replaceFirst("%PATH%", PROJECT_DIR.toURI().relativize(MIXIN.toURI()).getPath()).replaceFirst("%SOURCE%", PROJECT_DIR.toURI().relativize(MIXIN_SRC.toURI()).getPath()).replaceFirst("%JAVADOC%", PROJECT_DIR.toURI().relativize(MIXIN_JD.toURI()).getPath()) + '\n';
 			Files.write(new File(PROJECT_DIR, ".classpath").toPath(), Eclipse.CLASSPATH.replaceFirst("%INSERT%", partclasspath.substring(0, partclasspath.length() - 1)).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);

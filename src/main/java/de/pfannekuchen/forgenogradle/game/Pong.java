@@ -43,15 +43,15 @@ public class Pong extends JFrame implements KeyListener {
 				while (true) {
 					// wait a frame
 					repaint();
-					Thread.sleep(3);
+					Thread.sleep(16);
 					// moving
-					if (isWPressed) y1 -= 0.005;
-					if (isSPressed) y1 += 0.005;
+					if (isWPressed) y1 -= 0.025;
+					if (isSPressed) y1 += 0.025;
 					// ball moving
-					if (rol) ballx += 0.0025;
-					else ballx -= 0.0025;
-					if (uod) bally += 0.0025/9*16;
-					else bally -= 0.0025/9*16;
+					if (rol) ballx += 0.0125;
+					else ballx -= 0.0125;
+					if (uod) bally += 0.0125/9*16;
+					else bally -= 0.0125/9*16;
 					
 					// top bottom collision
 					double ballsize = ballpixelsize*6;
@@ -64,8 +64,8 @@ public class Pong extends JFrame implements KeyListener {
 					
 					// move box 2
 					if (ballx > 0.75 && rol) {
-						if (bally > y2+size/2) y2+=0.005;
-						else y2-=0.005;
+						if (bally > y2+size/2) y2+=0.025;
+						else y2-=0.025;
 					}
 					
 					// clamp positions
