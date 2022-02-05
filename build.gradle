@@ -9,7 +9,7 @@ plugins {
 targetCompatibility = sourceCompatibility = 1.8
 
 group = 'de.pfannekuchen'
-version = '1.0.1'
+version = '1.0.2'
 archivesBaseName = 'ForgeNoGradle'
 
 repositories {
@@ -24,8 +24,6 @@ dependencies {
 	implementation 'com.google.code.gson:gson:2.8.8'
 	// Use Zip4J for easy unzipping
 	implementation 'net.lingala.zip4j:zip4j:2.9.0'
-	// Fabric Decompiler
-	implementation 'net.fabricmc:fabric-fernflower:1.0.1'
 }
 
 // Create a Task that moves the API into the resources dir

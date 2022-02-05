@@ -6,7 +6,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -132,7 +131,6 @@ public class Pong extends JFrame implements KeyListener {
 		g.fillRect((int) (getWidth()/2-(getWidth()*0.45)), (int) (y1*getHeight()), (int) (0.015*getWidth()), (int) (size*getHeight()));
 		g.fillRect((int) (getWidth()/2+(getWidth()*0.435)), (int) (y2*getHeight()), (int) (0.015*getWidth()), (int) (size*getHeight()));
 		// Score
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g.setFont(new Font(Font.MONOSPACED, 2, 32));
 		FontMetrics m = g.getFontMetrics();
 		g.drawString(score1 + " - " + score2, (int) (0.5*getWidth())-m.stringWidth(score1 + " - " + score2)/2, (int) (0.05*getHeight()));
@@ -144,36 +142,47 @@ public class Pong extends JFrame implements KeyListener {
 			}
 		}
 		// Text Background
-		g.setColor(Color.green);
 		int y = (int) (getHeight()-m.getHeight()*1.1);
-		g.setFont(new Font(Font.MONOSPACED, 2, 12));
+		g.setFont(new Font(Font.MONOSPACED, 0, 12));
 		m = g.getFontMetrics();
-		List<String> clone = new ArrayList<>(strings);
+		List<String> clone = new ArrayList<>(allstrings);
 		Collections.reverse(clone);
 		if (clone.size() > 80) clone = clone.subList(0, 80);
 		for (String string : clone) {
+			if (redstrings.contains(string))
+				g.setColor(Color.red);
+			else
+				g.setColor(Color.green);
 			g.drawString(string, 15, y);
-			y -= m.getHeight()*1.1;
+			y -= m.getHeight()*1;
 		}
 		gr.drawImage(img, 0, 0, null);
 	}
 	
 	private static ArrayList<String> strings = new ArrayList<>();
+	private static ArrayList<String> redstrings = new ArrayList<>();
+	private static ArrayList<String> allstrings = new ArrayList<>();
 	
 	public static void runPong() {
 		new Pong();
 		System.setOut(new PrintStream(System.out) {
 			@Override
-			public void println(String x) {
-				strings.add(x);
-				super.println(x);
+			public void print(String x) {
+				if (x != null) {
+					strings.add(x.replace("\t", "        "));
+					allstrings.add(x.replace("\t", "        "));
+				}
+				super.print(x);
 			}
 		});
 		System.setErr(new PrintStream(System.err) {
 			@Override
-			public void println(String x) {
-				if (x != null) strings.add(x);
-				super.println(x);
+			public void print(String x) {
+				if (x != null) {
+					redstrings.add(x.replace("\t", "        "));
+					allstrings.add(x.replace("\t", "        "));
+				}
+				super.print(x);
 			}
 		});
 	}

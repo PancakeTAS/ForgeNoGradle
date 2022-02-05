@@ -2,29 +2,18 @@ package de.pfannekuchen.forgenogradle;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
-
-import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
-import org.jetbrains.java.decompiler.main.decompiler.PrintStreamLogger;
-import org.jetbrains.java.decompiler.main.extern.IBytecodeProvider;
-import org.jetbrains.java.decompiler.main.extern.IFernflowerPreferences;
-import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import de.pfannekuchen.forgenogradle.exceptions.ConnectionException;
 import de.pfannekuchen.forgenogradle.exceptions.FilesystemException;
-import de.pfannekuchen.forgenogradle.exceptions.ReflectionException;
 import de.pfannekuchen.forgenogradle.game.Pong;
 import de.pfannekuchen.forgenogradle.gson.json.VersionJson;
 import de.pfannekuchen.forgenogradle.gson.jsonassets.AssetsJson;
@@ -149,41 +138,48 @@ public class ForgeNoGradle {
 	/**
 	 * Main Class for managing the order of execution
 	 * @param args Main
-	 * @throws InterruptedException In case someone exites early
+	 * @throws IOException *shrug*
 	 */
-	public static void main(String[] args) throws InterruptedException {
-		// Delete Folder Structore
-		deleteFolderStructure();
-		
-		// Run Pong
-		Pong.runPong();
-		
-		System.out.println("========== Starting to prepare ForgeNoGradle workspace");
-		long time = System.currentTimeMillis();
-		
-		// Create Folder Structure
-		createFolderStructure();
-		
-		System.out.println("=========== 1/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
-		
-		// Download the game assets
-		downloadGameAssets();
-		
-		System.out.println("=========== 2/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
-		
-		// Decompile the game
-		decompileForge();
-		
-		System.out.println("=========== 3/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
-		
-		// Create Eclipse Files
-		createEclipseFiles();
-		
-		System.out.println("=========== 4/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
-		System.out.println("Exiting...");
+	public static void main(String[] args) throws IOException {
+		try {
+			// Delete Folder Structore
+			deleteFolderStructure();
+			
+			// Run Pong
+			Pong.runPong();
+			
+			System.out.println("========== Starting to prepare ForgeNoGradle workspace");
+			long time = System.currentTimeMillis();
+			
+			// Create Folder Structure
+			createFolderStructure();
+			
+			System.out.println("=========== 1/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
+			
+			// Download the game assets
+			downloadGameAssets();
+			
+			System.out.println("=========== 2/4 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
+			
+			// Create Eclipse Files
+			createEclipseFiles();
+			
+			System.out.println("=========== 3/3 finished. Took " + String.format("%.2f", ((int) (System.currentTimeMillis() - time)) / 1000.0f) + " seconds...");
+			System.out.println("Exiting...");
 
-		// Exit
-		System.exit(0);
+			// Exit
+			System.exit(0);
+		} catch (Exception e) {
+			System.err.println(" ");
+			System.err.println("An Exception occured: " + e.getClass().getSimpleName());
+			Throwable c = e;
+			while (c != null) {
+				System.err.println("    " + c.getMessage());
+				c = c.getCause();
+			}
+			System.err.println("  ");
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -271,7 +267,8 @@ public class ForgeNoGradle {
 		System.out.println("[ForgeNoGradle] Downloading the Forge Client+Server Jar");
 		
 		try {
-			Files.copy(new URL("https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar").openStream(), MCFORGE.toPath());
+			Files.copy(new URL("https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar").openStream(), MCFORGE.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new URL("https://data.mgnet.work/forge/mc-forge-" + versions.id + "-src.jar").openStream(), MCFORGE_SRC.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 	    	// catch io exceptions and rethrow them properly
 			throw new ConnectionException("Failed downloading: https://data.mgnet.work/forge/mc-forge-" + versions.id + ".jar", e);
@@ -283,7 +280,7 @@ public class ForgeNoGradle {
 			File mcpDir = new File(FNG_LIB_DIR, "mcp");
 			mcpDir.mkdir();
 			File mcp = new File(mcpDir, "mcp.zip");
-			Files.copy(new URL("https://data.mgnet.work/forge/" + versions.id + "-mcp.zip").openStream(), mcp.toPath());
+			Files.copy(new URL("https://data.mgnet.work/forge/" + versions.id + "-mcp.zip").openStream(), mcp.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			// extract
 			Utils.unzipFileAndDelete(mcpDir, "mcp.zip", "MCP");
 			mcp.delete();
@@ -295,66 +292,16 @@ public class ForgeNoGradle {
 		System.out.println("[ForgeNoGradle] Downloading Mixin");
 		
 		try {
-			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + ".jar")), MIXIN.toPath());
-			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-sources.jar")), MIXIN_SRC.toPath());
-			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-javadoc.jar")), MIXIN_JD.toPath());
-			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-processor.jar")), MIXIN_P.toPath());
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + ".jar")), MIXIN.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-sources.jar")), MIXIN_SRC.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-javadoc.jar")), MIXIN_JD.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Utils.userAgentDownload(new URL(MIXIN_BASE_URL + "-processor.jar")), MIXIN_P.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 	    	// catch io exceptions and rethrow them properly
 			throw new ConnectionException("Failed downloading mixin", e);
 		}
 		
 		System.out.println("[ForgeNoGradle] Finished downloading the Game Assets");
-	}
-	
-	/**
-	 * Decompiles the forge game jar
-	 */
-	private static void decompileForge() {
-		try {
-			System.out.println("[ForgeNoGradle] Preparing decompiler settings...");
-			
-			// Prepare mandatory settings
-			Map<String, Object> mapOptions = new HashMap<String, Object>();
-			mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
-			mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
-			mapOptions.put(IFernflowerPreferences.ASCII_STRING_CHARACTERS, "1");
-			mapOptions.put(IFernflowerPreferences.THREADS, Runtime.getRuntime().availableProcessors() + ""); // Multithreaded to system cores
-			mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
-			mapOptions.put(IFernflowerPreferences.REMOVE_SYNTHETIC, "1");
-			mapOptions.put(IFernflowerPreferences.REMOVE_BRIDGE, "1");
-			mapOptions.put(IFernflowerPreferences.LITERALS_AS_IS, "0");
-			mapOptions.put(IFernflowerPreferences.UNIT_TEST_MODE, "0");
-			mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
-			
-			System.out.println("[ForgeNoGradle] Creating decompiler...");
-			
-			// ConsoleDecompiler is private ._.. We use reflection to create an instance
-			Constructor<?> c = Class.forName("org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler").getDeclaredConstructors()[0];
-			c.setAccessible(true);
-			PrintStreamLogger logger = new PrintStreamLogger(System.out);
-			File temp_source = new File(FNG_LIB_DIR, "src");
-			Object consoledecompiler = c.newInstance(temp_source, mapOptions, logger);
-			// Create the Decompiler Wrapper
-			BaseDecompiler decompiler = new BaseDecompiler((IBytecodeProvider) consoledecompiler, (IResultSaver) consoledecompiler, mapOptions, logger);
-			decompiler.addSource(MCFORGE);
-			for (File library : LIBRARIES_DIR.listFiles()) {
-				decompiler.addLibrary(library);
-			}
-			
-			System.out.println("[ForgeNoGradle] Decompiling...");
-			
-			decompiler.decompileContext();
-			
-			System.out.println("[ForgeNoGradle] Moving source jar...");
-			
-			new File(temp_source, "mc-forge-" + VERSION + ".jar").renameTo(MCFORGE_SRC);
-			temp_source.delete();
-			
-			System.out.println("[ForgeNoGradle] Finished decompiling the game");
-		} catch (SecurityException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw new ReflectionException("Unable to create decompiler", e);
-		}
 	}
 	
 	/**
