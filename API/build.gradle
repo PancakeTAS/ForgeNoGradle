@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.pfannekuchen'
-version = '1.0.1'
+version = '1.0.3'
 archivesBaseName = 'ForgeNoGradleAPI'
 
 // Rename Jar
@@ -20,6 +20,8 @@ targetCompatibility = sourceCompatibility = 1.8
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    // Use Pancake's maven server for AccountAPI
+    maven { url 'https://maven.mgnet.work' }
 }
 
 dependencies {
@@ -28,7 +30,9 @@ dependencies {
 		exclude module: 'asm-commons'
 	}
 	// ASM Replacement
-	implementation ('org.ow2.asm:asm-debug-all:5.2')
+	implementation group: 'org.ow2.asm', name: 'asm-debug-all', version: '5.2'
 	// Use Zip4J for easy un/zipping
-	implementation 'net.lingala.zip4j:zip4j:2.9.0'
+	implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.9.0'
+	// Account API for logging in
+	implementation group: 'de.pfannekuchen', name: 'accountapi', version: '1.1.0'
 }
